@@ -187,6 +187,11 @@
         }
 
         if (status === "Regular Pioneer") {
+            // New check for Group Assistant's phone number
+            if (phoneNumber === '919987378445') {
+                alert("Should only be sent to Group Overseer.");
+                return;
+            }
             if (studies === "" || studies < 0 || !hours || hours <= 0) {
                 alert("For Regular Pioneers, both 'Bible Studies' and 'Hours' are mandatory.");
                 return;
