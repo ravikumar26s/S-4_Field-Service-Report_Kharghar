@@ -92,7 +92,7 @@
 
 <div class="form-container">
     <h2>Field Service Report</h2>
-    <p class="header-text"><b>NAVI MUMBAI KALAMBOLI<br>[KHARGHAR SERVICE GROUP]</b></p>
+    <p class="header-text"><b>NAVI MUMBAI KALAMBOLI<br>[KALAMBOLI SERVICE GROUP]</b></p>
     <p class="sub-header-text">Fill out details for monthly reporting.</p>
     
     <div class="form-group">
@@ -174,7 +174,6 @@
     function sendToWhatsApp(phoneNumber) {
         const name = document.getElementById('name').value.trim();
         const month = document.getElementById('month').value;
-        const minMonth = document.getElementById('month').getAttribute('min');
         const sharedCheckbox = document.getElementById('shared');
         const status = document.getElementById('pioneerStatus').value;
         const studies = document.getElementById('studies').value.trim();
@@ -207,12 +206,11 @@
             }
         } catch(e) {}
 
-        // --- UPDATED COMMENT LOGIC ---
         let finalComments = "";
         if (status !== "Publisher") {
             finalComments = status;
             if (userComments) {
-                finalComments += "\n" + userComments; // Adds manual comment on a new line
+                finalComments += "\n" + userComments; 
             }
         } else {
             finalComments = userComments;
@@ -228,31 +226,19 @@
         if (finalComments) message += `\n📝 *Comments:* ${finalComments}`;
 
         const encodedMessage = encodeURIComponent(message);
-        
-        // --- UPDATED APP DETECTION LOGIC ---
-        // Protocol-first: This triggers Standard or Business App schemes
-        const appUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
-        
-        // Web Fallback: This triggers the official WhatsApp API portal
-        const webUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
+        const webUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        // --- THE IFRAME JAILBREAK TRICK ---
+        // Create an invisible link, set it to target the top-most window, and click it.
+        const link = document.createElement('a');
+        link.href = webUrl;
         
-        if (isMobile) {
-            // Try to open the app via the registered protocol
-            window.location.href = appUrl;
-
-            // Timer: If the page is still visible after 1.5s, the app isn't installed.
-            // Redirect to the web fallback
-            setTimeout(() => {
-                if (!document.hidden) {
-                    window.location.href = webUrl;
-                }
-            }, 1500);
-        } else {
-            // Desktop logic remains stable with the API link
-            window.open(webUrl, '_blank', 'noopener,noreferrer');
-        }
+        // _top forces the browser to break out of all iframes
+        link.target = '_top'; 
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 </script>
 </body>
