@@ -313,19 +313,24 @@
         if (finalComments) message += `\n📝 *Comments:* ${finalComments}`;
 
         const encodedMessage = encodeURIComponent(message);
+        const appUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
         const webUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
+        // Detect if the user is on a mobile device (including iPads)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
         try {
-            // Create a temporary anchor tag to bypass strict mobile popup blockers
-            const link = document.createElement('a');
-            link.href = webUrl;
-            link.target = '_blank'; // Opens in a new tab, preserving your form data
-            link.rel = 'noopener noreferrer';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (isMobile) {
+                // On iOS and Android, directly trigger the native app link.
+                // This prevents Safari/Chrome from opening a blank new tab, 
+                // and your form remains completely untouched in the background.
+                window.location.href = appUrl;
+            } else {
+                // On Desktop/Computer, open WhatsApp Web in a new tab.
+                window.open(webUrl, '_blank', 'noopener,noreferrer');
+            }
         } catch (err) {
-            showFormError("Error trying to open WhatsApp. Please check your browser popup blocker or adblock settings.");
+            showFormError("Error trying to open WhatsApp. Please check your browser settings.");
         }
     }
 </script>
