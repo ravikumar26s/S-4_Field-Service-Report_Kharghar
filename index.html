@@ -262,7 +262,7 @@
 
         // Check if Regular Pioneer is trying to send to the assistant
         if (status === "Regular Pioneer" && isAssistant) {
-            showFormError("Regular Pioneers should only send their report to the Group Overseer.");
+            showFormError("Send the report to the Group Overseer.");
             return;
         }
 
@@ -274,7 +274,7 @@
 
         if (status === "Regular Pioneer") {
             if (studies === "" || Number(studies) < 0 || !hours || Number(hours) <= 0) {
-                showFormError("For Regular Pioneers, both 'Bible Studies' and 'Hours' are mandatory.");
+                showFormError("Both 'Bible Studies' and 'Hours' are mandatory.");
                 return;
             }
         }
