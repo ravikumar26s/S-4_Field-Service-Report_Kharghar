@@ -262,7 +262,7 @@
 
         // Check if Regular Pioneer is trying to send to the assistant
         if (status === "Regular Pioneer" && isAssistant) {
-            showFormError("Send your report to the Group Overseer.");
+            showFormError("Regular Pioneers should only send their report to the Group Overseer.");
             return;
         }
 
@@ -274,7 +274,7 @@
 
         if (status === "Regular Pioneer") {
             if (studies === "" || Number(studies) < 0 || !hours || Number(hours) <= 0) {
-                showFormError("Entering 'Bible Studies' and 'Hours' are mandatory.");
+                showFormError("For Regular Pioneers, both 'Bible Studies' and 'Hours' are mandatory.");
                 return;
             }
         }
@@ -313,24 +313,17 @@
         if (finalComments) message += `\n📝 *Comments:* ${finalComments}`;
 
         const encodedMessage = encodeURIComponent(message);
-        
-        // Changed fallback from api.whatsapp.com to wa.me (bypasses most blocks)
-        const appUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
         const webUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        
         try {
-            if (isMobile) {
-                window.location.href = appUrl;
-                setTimeout(() => {
-                    if (!document.hidden) {
-                        window.location.href = webUrl;
-                    }
-                }, 1500);
-            } else {
-                window.open(webUrl, '_blank', 'noopener,noreferrer');
-            }
+            // Create a temporary anchor tag to bypass strict mobile popup blockers
+            const link = document.createElement('a');
+            link.href = webUrl;
+            link.target = '_blank'; // Opens in a new tab, preserving your form data
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         } catch (err) {
             showFormError("Error trying to open WhatsApp. Please check your browser popup blocker or adblock settings.");
         }
