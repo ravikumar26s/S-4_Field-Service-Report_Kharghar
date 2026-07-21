@@ -201,29 +201,21 @@
         monthInput.value = lastMonthStr;
     })();
 
-    let errorTimeout; // Stores the timer
+    let errorTimeout;
 
-    // Helper function to display errors on screen
     function showFormError(message) {
         const errorBox = document.getElementById('error-box');
         if (errorBox) {
             errorBox.innerText = message;
             errorBox.style.display = 'block';
-            
-            // Smoothly scroll to the top so the user sees the message
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Clear any existing timer so it doesn't close prematurely
             if (errorTimeout) clearTimeout(errorTimeout);
-            
-            // Auto-hide the message after 10 seconds (increased from 5s)
             errorTimeout = setTimeout(() => {
                 errorBox.style.display = 'none';
             }, 10000); 
         }
     }
 
-    // Visually gray out the assistant button
     const pioneerStatusDropdown = document.getElementById('pioneerStatus');
     if (pioneerStatusDropdown) {
         pioneerStatusDropdown.addEventListener('change', function() {
@@ -239,7 +231,6 @@
     }
 
     function sendToWhatsApp(phoneNumber, isAssistant = false) {
-        // Clear any old errors
         const errorBox = document.getElementById('error-box');
         if (errorBox) errorBox.style.display = 'none';
 
@@ -251,7 +242,6 @@
         const hoursInput = document.getElementById('hours');
         const commentsInput = document.getElementById('comments');
 
-        // Extract values
         const name = nameInput ? nameInput.value.trim() : "";
         const month = monthInput ? monthInput.value : "";
         const status = statusElement ? statusElement.value : "";
@@ -260,13 +250,11 @@
         const userComments = commentsInput ? commentsInput.value.trim() : "";
         const isShared = sharedCheckbox ? sharedCheckbox.checked : false;
 
-        // Check if Regular Pioneer is trying to send to the assistant
         if (status === "Regular Pioneer" && isAssistant) {
             showFormError("Send the report to the Group Overseer.");
             return;
         }
 
-        // Standard validations
         if (!name || !month || !status || !isShared) {
             showFormError("Please complete Name, Month, Status, and check the Ministry Checkbox.");
             return;
@@ -314,22 +302,38 @@
 
         const encodedMessage = encodeURIComponent(message);
         
-        // Changed fallback from api.whatsapp.com to wa.me (bypasses most blocks)
+        // Universal web URL scheme with noreferrer compliance for cloaked environments
+        const webUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
         const appUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
-        const webUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        
+
         try {
             if (isMobile) {
-                window.location.href = appUrl;
+                // Create a temporary hidden anchor to bypass strict mobile referrer block policies and cloaking scripts
+                const anchor = document.createElement('a');
+                anchor.href = appUrl;
+                anchor.rel = 'noreferrer';
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+
                 setTimeout(() => {
-                    if (!document.hidden) {
-                        window.location.href = webUrl;
-                    }
-                }, 1500);
+                    const fallbackAnchor = document.createElement('a');
+                    fallbackAnchor.href = webUrl;
+                    fallbackAnchor.rel = 'noreferrer';
+                    document.body.appendChild(fallbackAnchor);
+                    fallbackAnchor.click();
+                    document.body.removeChild(fallbackAnchor);
+                }, 1000);
             } else {
-                window.open(webUrl, '_blank', 'noopener,noreferrer');
+                const anchor = document.createElement('a');
+                anchor.href = webUrl;
+                anchor.target = '_blank';
+                anchor.rel = 'noopener noreferrer';
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
             }
         } catch (err) {
             showFormError("Error trying to open WhatsApp. Please check your browser popup blocker or adblock settings.");
