@@ -40,33 +40,33 @@
         .sub-header-text { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }[cite: 1]
         
         /* Custom Error Box - Now designed for the top */
-        #error-box {[cite: 1]
-            display: none;[cite: 1]
-            background-color: #fce8e6;[cite: 1]
-            color: #d93025;[cite: 1]
-            padding: 12px;[cite: 1]
-            border-radius: 6px;[cite: 1]
-            border: 1px solid #f9cdca;[cite: 1]
-            margin-bottom: 20px;[cite: 1]
-            font-size: 14px;[cite: 1]
-            font-weight: 600;[cite: 1]
-            text-align: center;[cite: 1]
-            line-height: 1.4;[cite: 1]
-        }
+        #error-box {
+            display: none;
+            background-color: #fce8e6;
+            color: #d93025;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #f9cdca;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
+        }[cite: 1]
         
         .form-group { margin-bottom: 18px; width: 100%; }[cite: 1]
         label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; font-size: 14px;}[cite: 1]
         
         input[type="text"], input[type="number"], input[type="month"], textarea, select {[cite: 1]
-            display: block;[cite: 1]
+            display: block;
             width: 100%;[cite: 1]
-            max-width: 100%;[cite: 1]
+            max-width: 100%;
             padding: 12px;[cite: 1]
             border: 1px solid #ccc;[cite: 1]
             border-radius: 6px;[cite: 1]
             font-size: 16px;[cite: 1]
             background-color: #f9f9f9;[cite: 1]
-            font-family: inherit;[cite: 1]
+            font-family: inherit;
             -webkit-appearance: none;[cite: 1]
         }
         
@@ -83,30 +83,30 @@
             color: white;[cite: 1]
             padding: 15px 20px;[cite: 1]
             font-size: 16px;[cite: 1]
-            font-weight: bold;[cite: 1]
-            border: none;[cite: 1]
+            font-weight: bold;
+            border: none;
             border-radius: 50px;[cite: 1]
             cursor: pointer;[cite: 1]
-            display: flex;[cite: 1]
-            justify-content: center;[cite: 1]
-            align-items: center;[cite: 1]
-            gap: 10px;[cite: 1]
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
             box-shadow: 0 4px 6px rgba(37, 211, 102, 0.2);[cite: 1]
             text-decoration: none;[cite: 1]
-            width: 100%;[cite: 1]
+            width: 100%;
             transition: all 0.3s ease;[cite: 1]
         }
         .whatsapp-btn:active { transform: scale(0.98); }[cite: 1]
         .whatsapp-btn svg { width: 22px; height: 22px; fill: white; flex-shrink: 0; }[cite: 1]
         
         /* Visual disable for the assistant button */
-        .whatsapp-btn.disabled-btn {[cite: 1]
+        .whatsapp-btn.disabled-btn {
             background-color: #a8e8bc;[cite: 1]
             cursor: not-allowed;[cite: 1]
             box-shadow: none;[cite: 1]
         }
-        .whatsapp-btn.disabled-btn:active {[cite: 1]
-            transform: none;[cite: 1]
+        .whatsapp-btn.disabled-btn:active {
+            transform: none;
         }
 
         .footer-text { font-size: 11px; color: #777; text-align: center; margin-top: 20px; line-height: 1.5; padding: 0 5px;}[cite: 1]
@@ -302,28 +302,17 @@
 
         const encodedMessage = encodeURIComponent(message);
         
-        // Final Fix: Use direct clean URI window location assignment with intermediate clean navigation sandbox.
-        // This stops iframe restriction headers (ERR_BLOCKED_BY_RESPONSE) from tracking the response origin.
-        const cleanUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
-        const appUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
-
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
+        // Final Fix for ERR_BLOCKED_BY_RESPONSE & Mobile loading failure: 
+        // Utilizing direct text intent via Universal URL routing without nesting api.whatsapp.com frames.
+        const targetUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
+        
         try {
-            if (isMobile) {
-                window.location.href = appUrl;
-            } else {
-                // Creates a completely unlinked top-level window context to bypass host referrer response blocks
-                const targetWindow = window.open('', '_blank');
-                if (targetWindow) {
-                    targetWindow.opener = null;
-                    targetWindow.location = cleanUrl;
-                } else {
-                    window.location.href = cleanUrl;
-                }
+            const win = window.open(targetUrl, '_system');
+            if (!win) {
+                window.location.href = targetUrl;
             }
-        } catch (err) {
-            showFormError("Error trying to open WhatsApp. Please check your browser popup blocker or adblock settings.");
+        } catch (e) {
+            window.location.href = targetUrl;
         }
     }
 </script>
