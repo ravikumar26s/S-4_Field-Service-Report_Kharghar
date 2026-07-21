@@ -302,23 +302,19 @@
 
         const encodedMessage = encodeURIComponent(message);
         
-        // Completely bypass api.whatsapp.com by forcing direct location change / window assignment to wa.me or standard location injection
+        // Using explicit direct protocol mapping with fallback link creation to circumvent iframe blocks entirely
         const webUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-        const appUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
-
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
+        
         try {
-            if (isMobile) {
-                window.location.href = appUrl;
-                setTimeout(() => {
-                    window.location.replace(webUrl);
-                }, 1000);
-            } else {
-                window.open(webUrl, '_blank', 'noopener,noreferrer');
-            }
+            const safetyLink = document.createElement('a');
+            safetyLink.href = webUrl;
+            safetyLink.target = '_blank';
+            safetyLink.rel = 'noopener';
+            document.body.appendChild(safetyLink);
+            safetyLink.click();
+            document.body.removeChild(safetyLink);
         } catch (err) {
-            showFormError("Error trying to open WhatsApp. Please check your browser popup blocker or adblock settings.");
+            window.location.href = webUrl;
         }
     }
 </script>
