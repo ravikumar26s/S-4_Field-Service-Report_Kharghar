@@ -302,18 +302,16 @@
 
         const encodedMessage = encodeURIComponent(message);
         
-        // Universal web URL scheme with noreferrer compliance for cloaked environments
-        const webUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
+        // Using wa.me endpoint to completely bypass api.whatsapp.com frame and response blocks
+        const webUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
         const appUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
 
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
         try {
             if (isMobile) {
-                // Create a temporary hidden anchor to bypass strict mobile referrer block policies and cloaking scripts
                 const anchor = document.createElement('a');
                 anchor.href = appUrl;
-                anchor.rel = 'noreferrer';
                 document.body.appendChild(anchor);
                 anchor.click();
                 document.body.removeChild(anchor);
@@ -321,7 +319,8 @@
                 setTimeout(() => {
                     const fallbackAnchor = document.createElement('a');
                     fallbackAnchor.href = webUrl;
-                    fallbackAnchor.rel = 'noreferrer';
+                    fallbackAnchor.target = '_blank';
+                    fallbackAnchor.rel = 'noopener noreferrer';
                     document.body.appendChild(fallbackAnchor);
                     fallbackAnchor.click();
                     document.body.removeChild(fallbackAnchor);
